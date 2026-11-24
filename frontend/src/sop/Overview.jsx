@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Donut, Histogram, MonthBars, ScatterPlot, StageBars } from './Charts'
+import { Donut, Histogram, MonthBars, ScatterPlot, Sparkline, StageBars, trendRows } from './Charts'
 import { days, num } from './views'
 import { Meter, TimeCompare } from '../supply/Meter'
 
@@ -11,6 +11,12 @@ const PERIODS = [
   { value: '36', label: 'Last 36 months' },
   { value: '0', label: 'All since 2015' },
 ]
+
+const SPARKS = {
+  tracked: { key: 'arrived', color: '#f0a05a' },
+  completed: { key: 'completed', color: '#3ee0c0' },
+  open: { key: 'remaining', color: '#7dd3fc' },
+}
 
 const CARDS = [
   ['tracked', 'Tracked', 'tracked', 'In this window', ''],
@@ -86,6 +92,7 @@ export default function Overview({
               <button key={view} type="button" className={`kpi ${tone}`} onClick={() => onOpenList({ view, title: label })}>
                 <p>{label}</p>
                 <strong>{num(data.kpis[field])}</strong>
+                {SPARKS[view] && <Sparkline values={trendRows(data.monthly, months).map((row) => row[SPARKS[view].key])} color={SPARKS[view].color} />}
                 <span>
                   {view === 'completed' ? `${days(data.kpis.medianCycle)} median cycle` : note}
                 </span>

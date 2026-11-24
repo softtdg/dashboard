@@ -204,6 +204,31 @@ export function FlowChart({ monthly }) {
   )
 }
 
+export function trendRows(monthly, months) {
+  const sorted = [...monthly].sort((a, b) => a.month.localeCompare(b.month))
+  const count = Number(months)
+  return count ? sorted.slice(-count) : sorted
+}
+
+export function Sparkline({ values, color = '#f0a05a' }) {
+  if (!values?.length) return null
+  const width = 120
+  const height = 28
+  const max = Math.max(...values, 1)
+  const min = Math.min(...values, 0)
+  const span = max - min || 1
+  const points = values.map((value, index) => {
+    const x = values.length <= 1 ? width / 2 : (index / (values.length - 1)) * width
+    const y = height - 3 - ((value - min) / span) * (height - 6)
+    return `${x},${y}`
+  }).join(' ')
+  return (
+    <svg className="spark" viewBox={`0 0 ${width} ${height}`} aria-hidden="true">
+      <polyline points={points} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 export function StageBars({ stages }) {
   const max = Math.max(...stages.map((stage) => stage.medianDays || 0), 1)
   return (
