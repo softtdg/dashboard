@@ -1,0 +1,22 @@
+{
+  "name": "dashboard-backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "cross-env NODE_ENV=local node index.js",
+    "dev": "cross-env NODE_ENV=local nodemon index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "mongodb": "^6.20.0",
+    "mongoose": "^8.19.3",
+    "mssql": "^11.0.1"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "nodemon": "^3.1.10"
+  }
+}
