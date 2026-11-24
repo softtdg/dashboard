@@ -229,6 +229,71 @@ export function Sparkline({ values, color = '#f0a05a' }) {
   )
 }
 
+export function LineChart({ rows, series, onPick }) {
+  if (!rows.length) return <p className="muted">No months in this window.</p>
+  const width = 760
+  const height = 250
+  const pad = { left: 42, right: 12, top: 16, bottom: 32 }
+  const max = Math.max(...rows.flatMap((row) => series.map((item) => row[item.key] || 0)), 1)
+  const plotWidth = width - pad.left - pad.right
+  const xScale = (index) => pad.left + (rows.length <= 1 ? plotWidth / 2 : (index / (rows.length - 1)) * plotWidth)
+  const yScale = (value) => height - pad.bottom - (value / max) * (height - pad.top - pad.bottom)
+  const step = Math.max(1, Math.ceil(rows.length / 8))
+
+  return (
+    <svg className="chart" viewBox={`0 0 ${width} ${height}`} role="img">
+      {ticks(max, 4).map((tick) => (
+        <g key={tick}>
+          <line className="gridline" x1={pad.left} x2={width - pad.right} y1={yScale(tick)} y2={yScale(tick)} />
+          <text className="axis" x={pad.left - 6} y={yScale(tick) + 4} textAnchor="end">{tick}</text>
+        </g>
+      ))}
+      {series.map((item) => (
+        <path
+          key={item.key}
+          fill="none"
+          stroke={item.color}
+          strokeWidth="2.4"
+          d={rows.map((row, index) => `${index ? 'L' : 'M'} ${xScale(index)} ${yScale(row[item.key] || 0)}`).join(' ')}
+        />
+      ))}
+      {rows.map((row, index) => (
+        <g key={row.month}>
+          <rect
+            className="line-hit"
+            x={xScale(index) - plotWidth / Math.max(rows.length, 1) / 2}
+            y={pad.top}
+            width={plotWidth / Math.max(rows.length, 1)}
+            height={height - pad.top - pad.bottom}
+            onClick={() => onPick?.(row)}
+          >
+            <title>{row.month}</title>
+          </rect>
+          {index % step === 0 && (
+            <text className="axis" x={xScale(index)} y={height - 10} textAnchor="middle">{row.month.slice(2)}</text>
+          )}
+        </g>
+      ))}
+    </svg>
+  )
+}
+
+export function Gauge({ value, note, onPick }) {
+  const pct = value == null ? 0 : Math.max(0, Math.min(100, value))
+  const arc = Math.PI * 76
+  const color = pct >= 70 ? '#3ee0c0' : pct >= 40 ? '#f0a05a' : '#fb7185'
+  return (
+    <button type="button" className="gauge" onClick={onPick}>
+      <svg viewBox="0 0 200 118" role="img">
+        <path d="M 24 100 A 76 76 0 0 1 176 100" className="gauge-track" />
+        <path d="M 24 100 A 76 76 0 0 1 176 100" className="gauge-value" stroke={color} strokeDasharray={`${(pct / 100) * arc} ${arc}`} />
+        <text className="gauge-num" x="100" y="94" textAnchor="middle">{value == null ? '—' : `${value}%`}</text>
+      </svg>
+      {note ? <span>{note}</span> : null}
+    </button>
+  )
+}
+
 export function StageBars({ stages }) {
   const max = Math.max(...stages.map((stage) => stage.medianDays || 0), 1)
   return (

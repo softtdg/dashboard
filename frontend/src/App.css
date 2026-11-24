@@ -168,6 +168,22 @@ button.kpi:hover { outline: 2px solid var(--copper); }
 .kpi p, .kpi span { color: var(--muted); font-size: 13px; }
 .kpi strong { display: block; margin: 6px 0 4px; font-size: 28px; letter-spacing: -0.03em; color: var(--copper); }
 .spark { width: 100%; height: 28px; margin: 2px 0 4px; display: block; }
+.line-hit { fill: transparent; cursor: pointer; }
+.gauge {
+  display: grid;
+  justify-items: center;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 8px 0 0;
+}
+.gauge svg { width: min(240px, 100%); height: auto; }
+.gauge-track { fill: none; stroke: #243044; stroke-width: 14; }
+.gauge-value { fill: none; stroke-width: 14; stroke-linecap: round; }
+.gauge-num { fill: #e8eef4; font-size: 28px; font-weight: 700; }
+.gauge span { color: var(--muted); font-size: 13px; text-align: center; }
 
 .panel h2 { margin-bottom: 4px; }
 

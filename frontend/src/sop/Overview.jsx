@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Donut, Histogram, MonthBars, ScatterPlot, Sparkline, StageBars, trendRows } from './Charts'
+import { Donut, Gauge, Histogram, LineChart, MonthBars, ScatterPlot, Sparkline, StageBars, trendRows } from './Charts'
 import { days, num } from './views'
 import { Meter, TimeCompare } from '../supply/Meter'
 
@@ -139,6 +139,36 @@ export default function Overview({
                   maxCycle: slice.max,
                   title: `Cycle ${slice.label}`,
                 })}
+              />
+            </article>
+          </section>
+
+          <section className="grid">
+            <article className="panel">
+              <h2>Trend</h2>
+              <p className="muted">One point is one month. Arrived entered that month. Completed and still open are from that same group. Click a month to open those SOPs.</p>
+              <div className="legend">
+                <span><i className="bar-arrived" /> Arrived</span>
+                <span><i className="bar-done" /> Completed</span>
+                <span><i className="bar-open" /> Still open</span>
+              </div>
+              <LineChart
+                rows={trendRows(data.monthly, months)}
+                series={[
+                  { key: 'arrived', color: '#7dd3fc' },
+                  { key: 'completed', color: '#3ee0c0' },
+                  { key: 'remaining', color: '#f0a05a' },
+                ]}
+                onPick={(row) => onOpenList({ view: 'monthArrived', title: row.month, entryMonth: row.month, entryMonths: '' })}
+              />
+            </article>
+            <article className="panel">
+              <h2>On time</h2>
+              <p className="muted">Of the completed SOPs that had a promised date, how many shipped on or before that date. Click the gauge to open them.</p>
+              <Gauge
+                value={data.kpis.onTimeRate}
+                note={`${data.kpis.onTimeRate ?? '—'}% shipped on or before ODD`}
+                onPick={() => onOpenList({ view: 'onTime', title: 'On time' })}
               />
             </article>
           </section>
