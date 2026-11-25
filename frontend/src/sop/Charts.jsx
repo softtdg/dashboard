@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 function percentile(values, ratio) {
   const sorted = values.filter((value) => value != null).sort((a, b) => a - b)
   if (!sorted.length) return 1
@@ -78,6 +80,7 @@ export function Histogram({ buckets, onPick }) {
 }
 
 export function ScatterPlot({ points, onPick }) {
+  const [hover, setHover] = useState(null)
   const width = 680
   const height = 340
   const pad = { l: 52, r: 18, t: 14, b: 40 }
@@ -85,33 +88,55 @@ export function ScatterPlot({ points, onPick }) {
   const yMax = percentile(points.map((point) => point.y), 0.95)
   const xScale = (value) => pad.l + (Math.min(value, xMax) / xMax) * (width - pad.l - pad.r)
   const yScale = (value) => height - pad.b - (Math.min(value, yMax) / yMax) * (height - pad.t - pad.b)
+  const tipLeft = hover ? (xScale(hover.x) / width) * 100 : 0
 
   return (
-    <svg className="chart" viewBox={`0 0 ${width} ${height}`} role="img">
-      {ticks(yMax, 4).map((tick) => (
-        <g key={`y-${tick}`}>
-          <line className="gridline" x1={pad.l} x2={width - pad.r} y1={yScale(tick)} y2={yScale(tick)} />
-          <text className="axis" x={pad.l - 8} y={yScale(tick) + 4} textAnchor="end">{tick}</text>
-        </g>
-      ))}
-      {ticks(xMax, 4).map((tick) => (
-        <text key={`x-${tick}`} className="axis" x={xScale(tick)} y={height - 16} textAnchor="middle">{tick}</text>
-      ))}
-      {points.map((point) => (
-        <circle
-          key={point.sopId}
-          cx={xScale(point.x)}
-          cy={yScale(point.y)}
-          r="3.4"
-          className={point.late ? 'late-dot' : 'ok-dot'}
-          onClick={() => onPick(point.sopId)}
+    <div className="scatter">
+      <svg className="chart" viewBox={`0 0 ${width} ${height}`} role="img">
+        {ticks(yMax, 4).map((tick) => (
+          <g key={`y-${tick}`}>
+            <line className="gridline" x1={pad.l} x2={width - pad.r} y1={yScale(tick)} y2={yScale(tick)} />
+            <text className="axis" x={pad.l - 8} y={yScale(tick) + 4} textAnchor="end">{tick}</text>
+          </g>
+        ))}
+        {ticks(xMax, 4).map((tick) => (
+          <text key={`x-${tick}`} className="axis" x={xScale(tick)} y={height - 16} textAnchor="middle">{tick}</text>
+        ))}
+        {points.map((point) => (
+          <circle
+            key={point.sopId}
+            cx={xScale(point.x)}
+            cy={yScale(point.y)}
+            r={hover?.sopId === point.sopId ? 5 : 3.4}
+            className={point.late ? 'late-dot' : 'ok-dot'}
+          />
+        ))}
+        {points.map((point) => (
+          <circle
+            key={`${point.sopId}-hit`}
+            cx={xScale(point.x)}
+            cy={yScale(point.y)}
+            r="8"
+            className="dot-hit"
+            onClick={() => onPick(point.sopId)}
+            onMouseOver={() => setHover(point)}
+            onMouseOut={() => setHover((current) => (current?.sopId === point.sopId ? null : current))}
+          >
+            <title>{point.sopNum}</title>
+          </circle>
+        ))}
+        <text className="axis-title" x={width / 2} y={height - 2} textAnchor="middle">Production days</text>
+        <text className="axis-title" x="14" y={height / 2} transform={`rotate(-90 14 ${height / 2})`} textAnchor="middle">Cycle days</text>
+      </svg>
+      {hover && (
+        <div
+          className={`dot-tip${tipLeft > 72 ? ' flip' : ''}`}
+          style={{ left: `${tipLeft}%`, top: `${(yScale(hover.y) / height) * 100}%` }}
         >
-          <title>{`${point.sopNum}: production ${point.x}d, cycle ${point.y}d`}</title>
-        </circle>
-      ))}
-      <text className="axis-title" x={width / 2} y={height - 2} textAnchor="middle">Production days</text>
-      <text className="axis-title" x="14" y={height / 2} transform={`rotate(-90 14 ${height / 2})`} textAnchor="middle">Cycle days</text>
-    </svg>
+          {hover.sopNum}
+        </div>
+      )}
+    </div>
   )
 }
 

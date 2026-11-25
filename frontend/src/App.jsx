@@ -7,11 +7,21 @@ import RecordList from './sop/RecordList'
 import BackorderBoard from './supply/BackorderBoard'
 import LineList from './supply/LineList'
 import PartsBoard from './supply/PartsBoard'
+import RmaBoard from './rma/RmaBoard'
+import DesignBoard from './research/DesignBoard'
+import InventoryBoard from './research/InventoryBoard'
+import PurchasingBoard from './research/PurchasingBoard'
+import SalesBoard from './research/SalesBoard'
 
 const TABS = [
-  { id: 'sop', label: 'SOP' },
-  { id: 'backorder', label: 'Backorder' },
-  { id: 'parts', label: 'Parts' },
+  { id: 'sop', label: 'SOP', name: 'SOP', tone: 'copper' },
+  { id: 'backorder', label: 'Backorder', name: 'Backorder', tone: 'rose' },
+  { id: 'parts', label: 'Parts', name: 'Parts', tone: 'sky' },
+  { id: 'rma', label: 'RMA', name: 'RMA', tone: 'violet' },
+  { id: 'design', label: 'Design', name: 'Design', tone: 'teal' },
+  { id: 'purchasing', label: 'Purchasing', name: 'Purchasing', tone: 'sand' },
+  { id: 'sales', label: 'Sales', name: 'Sales', tone: 'sky' },
+  { id: 'inventory', label: 'Inventory', name: 'Inventory', tone: 'teal' },
 ]
 
 export default function App() {
@@ -77,29 +87,37 @@ export default function App() {
     return () => controller.abort()
   }, [params, tab])
 
+  const current = TABS.find((item) => item.id === tab)
+
   return (
     <div className="app">
-      <div className="shell">
+      <div className={`shell tone-${current?.tone || 'copper'}`}>
         <div className="brand">
           <img src={logo} alt="TDG Transit Design Group" />
         </div>
-      <nav className="tabs">
-        {TABS.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            className={tab === item.id ? 'on' : ''}
-            onClick={() => {
-              setTab(item.id)
-              setList(null)
-              setDetailId(null)
-              setSupply(null)
-            }}
-          >
-            {item.label}
-          </button>
-        ))}
-      </nav>
+        <div className="shell-id">
+          <span className="shell-kicker">Research</span>
+          <p className="shell-name">{current?.name} <em>Dashboard</em></p>
+        </div>
+        <nav className="tabs" aria-label="Dashboards">
+          {TABS.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              data-tone={item.tone}
+              className={tab === item.id ? 'on' : ''}
+              onClick={() => {
+                setTab(item.id)
+                setList(null)
+                setDetailId(null)
+                setSupply(null)
+              }}
+            >
+              <span className="tab-dot" aria-hidden="true" />
+              {item.label}
+            </button>
+          ))}
+        </nav>
       </div>
 
       <main>
@@ -172,6 +190,11 @@ export default function App() {
             onBack={() => setList(null)}
           />
         )}
+        {tab === 'rma' && <RmaBoard />}
+        {tab === 'design' && <DesignBoard />}
+        {tab === 'purchasing' && <PurchasingBoard />}
+        {tab === 'sales' && <SalesBoard />}
+        {tab === 'inventory' && <InventoryBoard />}
         {tab === 'parts' && list && list.kind !== 'purchase' && (
           <LineList
             key={JSON.stringify(list)}

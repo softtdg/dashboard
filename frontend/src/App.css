@@ -23,36 +23,127 @@ button, input, select { font: inherit; color: inherit; }
 .app { min-height: 100vh; }
 
 .shell {
-  display: flex;
+  --accent: var(--copper);
+  --glow: rgba(240, 160, 90, 0.28);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px 22px;
+  gap: 22px;
+  margin: 14px 16px 0;
+  padding: 10px 14px 12px 18px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 22px;
   background:
-    radial-gradient(900px 120px at 12% -40%, rgba(240, 160, 90, 0.28), transparent 60%),
-    linear-gradient(180deg, #121922, #0b1016);
-  border-bottom: 1px solid var(--line);
+    radial-gradient(460px 140px at 6% 0%, var(--glow), transparent 72%),
+    linear-gradient(180deg, #182230, #10161e);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
-.brand { display: flex; align-items: center; }
-.brand img { height: 72px; width: auto; display: block; }
+.shell::after {
+  content: "";
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), transparent 62%);
+}
 
-.tabs { display: flex; gap: 6px; }
+.tone-rose { --accent: var(--rose); --glow: rgba(251, 113, 133, 0.26); }
+.tone-sky { --accent: var(--sky); --glow: rgba(125, 211, 252, 0.24); }
+.tone-violet { --accent: var(--violet); --glow: rgba(167, 139, 250, 0.28); }
+.tone-teal { --accent: var(--teal); --glow: rgba(62, 224, 192, 0.22); }
+.tone-sand { --accent: #fde68a; --glow: rgba(253, 230, 138, 0.24); }
+
+.brand {
+  display: flex;
+  align-items: center;
+  padding-right: 18px;
+  border-right: 1px solid var(--line);
+}
+
+.brand img { height: 64px; width: auto; display: block; }
+
+.shell-id { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+
+.shell-kicker {
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.shell-name {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 680;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.shell-name em {
+  margin-left: 8px;
+  font-style: normal;
+  font-weight: 480;
+  font-size: 0.68em;
+  color: var(--muted);
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+  max-width: 720px;
+  padding: 4px;
+  border-radius: 16px;
+  background: rgba(6, 10, 14, 0.55);
+  border: 1px solid var(--line);
+}
 
 .tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   border: 1px solid transparent;
   background: transparent;
   color: #c5d2da;
-  padding: 8px 14px;
-  border-radius: 999px;
+  padding: 10px 16px;
+  border-radius: 12px;
   cursor: pointer;
 }
 
+.tab-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+.tabs button[data-tone="copper"] .tab-dot { background: var(--copper); }
+.tabs button[data-tone="rose"] .tab-dot { background: var(--rose); }
+.tabs button[data-tone="sky"] .tab-dot { background: var(--sky); }
+.tabs button[data-tone="violet"] .tab-dot { background: var(--violet); }
+.tabs button[data-tone="teal"] .tab-dot { background: var(--teal); }
+.tabs button[data-tone="sand"] .tab-dot { background: #fde68a; }
+
 .tabs button.on {
-  background: #24180f;
-  color: var(--copper);
-  border-color: rgba(240, 160, 90, 0.45);
+  color: #f7fafc;
   font-weight: 650;
+  background: color-mix(in srgb, var(--accent) 20%, #1b2633);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.tabs button.on .tab-dot {
+  opacity: 1;
+  box-shadow: 0 0 8px var(--accent);
 }
 
 main {
@@ -276,6 +367,23 @@ th, td { padding: 8px 8px 8px 0; border-bottom: 1px solid var(--line); white-spa
 .axis, .axis-title { fill: #8b9aab; font-size: 11px; }
 .ok-dot { fill: #3ee0c0; cursor: pointer; opacity: 0.8; }
 .late-dot { fill: #f0a05a; cursor: pointer; opacity: 0.8; }
+.scatter { position: relative; }
+.dot-hit { fill: transparent; cursor: pointer; }
+.dot-tip {
+  position: absolute;
+  z-index: 2;
+  transform: translate(12px, -130%);
+  pointer-events: none;
+  background: #102033;
+  color: #e8eef4;
+  border: 1px solid #3ee0c0;
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.dot-tip.flip { transform: translate(calc(-100% - 12px), -130%); }
 .bar-arrived { fill: #7dd3fc; background: #7dd3fc; }
 .bar-done { fill: #3ee0c0; background: #3ee0c0; }
 .bar-open { fill: #f0a05a; background: #f0a05a; }
