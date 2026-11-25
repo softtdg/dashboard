@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
+import { ChartNoAxesColumnIncreasing, CircleDollarSign, MapPin, Package, PackageCheck, PackageX } from 'lucide-react'
 import { Donut } from '../sop/Charts'
+import { SparkKpi } from '../sop/SparkKpi'
 import { num } from '../sop/views'
 import { Meter } from '../supply/Meter'
-import { Findings, Kpi, LineFetch, Select } from './DesignBoard'
+import { Findings, LineFetch, Select } from './DesignBoard'
 
 export default function InventoryBoard() {
   const [filters, setFilters] = useState({ category: '' })
@@ -70,14 +72,14 @@ export default function InventoryBoard() {
           )}
           <Findings items={data.findings} />
           <section className="kpis">
-            <Kpi label="Parts" value={data.kpis.parts} note="Canada stock file" onClick={() => setList({ view: 'parts', title: 'Canada parts' })} />
-            <Kpi label="In stock" value={data.kpis.stocked} note={`${num(data.kpis.qty)} pieces`} tone="tone-ok" onClick={() => setList({ view: 'stocked', title: 'In stock' })} />
-            <Kpi label="Nothing on hand" value={data.kpis.zero} note="Quantity is zero" tone="tone-bad" onClick={() => setList({ view: 'zero', title: 'Nothing on hand' })} />
-            <Kpi label="On-hand value" value={data.kpis.value} note="Quantity times stored unit price" tone="tone-info" />
-            <Kpi label="Locations" value={data.kpis.locations} note="Places with stock" />
+            <SparkKpi label="Parts" value={data.kpis.parts} note="Canada stock file" icon={Package} swatch="blue" color="#60a5fa" onClick={() => setList({ view: 'parts', title: 'Canada parts' })} />
+            <SparkKpi label="In stock" value={data.kpis.stocked} note={`${num(data.kpis.qty)} pieces`} tone="tone-ok" icon={PackageCheck} swatch="green" color="#34d399" onClick={() => setList({ view: 'stocked', title: 'In stock' })} />
+            <SparkKpi label="Nothing on hand" value={data.kpis.zero} note="Quantity is zero" tone="tone-bad" icon={PackageX} swatch="pink" color="#fb7185" onClick={() => setList({ view: 'zero', title: 'Nothing on hand' })} />
+            <SparkKpi label="On-hand value" value={data.kpis.value} note="Quantity times stored unit price" tone="tone-info" icon={CircleDollarSign} swatch="amber" color="#fbbf24" />
+            <SparkKpi label="Locations" value={data.kpis.locations} note="Places with stock" icon={MapPin} swatch="teal" color="#5eead4" />
           </section>
           <article className="panel">
-            <h2>In stock against empty</h2>
+            <h2 className="with-ico"><ChartNoAxesColumnIncreasing size={18} /> In stock against empty</h2>
             <p className="muted">Empty means the quantity on hand is zero.</p>
             <Donut caption="parts" slices={[
               { label: 'In stock', value: data.kpis.stocked, color: '#3ee0c0', view: 'stocked' },

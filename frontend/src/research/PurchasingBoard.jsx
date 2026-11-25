@@ -1,9 +1,19 @@
 import { useEffect, useState } from 'react'
-import { Donut } from '../sop/Charts'
+import {
+  CalendarDays,
+  ChartNoAxesColumnIncreasing,
+  CircleCheck,
+  FileText,
+  Hourglass,
+  PieChart,
+  UserRound,
+  UsersRound,
+} from 'lucide-react'
+import { Donut, Sparkline } from '../sop/Charts'
 import { num } from '../sop/views'
 import { Meter } from '../supply/Meter'
 import { MonthPanel } from './MonthPanel'
-import { Findings, Kpi, LineFetch, Select, Window } from './DesignBoard'
+import { Findings, LineFetch, Select, Window } from './DesignBoard'
 
 export default function PurchasingBoard() {
   const [months, setMonths] = useState('24')
@@ -76,16 +86,16 @@ export default function PurchasingBoard() {
           </section>
           <Findings items={data.findings} />
           <section className="kpis">
-            <Kpi label="Lines" value={data.kpis.lines} note={`${num(Math.round(data.kpis.qty))} pieces ordered`} onClick={() => setList({ view: 'lines', title: 'Purchase lines' })} />
-            <Kpi label="Still short" value={data.kpis.open} note={`${num(Math.round(data.kpis.shortQty))} pieces`} tone="tone-open" onClick={() => setList({ view: 'open', title: 'Still short' })} />
-            <Kpi label="Filled" value={data.kpis.filled} note="Received covers the order" tone="tone-ok" onClick={() => setList({ view: 'filled', title: 'Filled' })} />
-            <Kpi label="Past delivery" value={data.kpis.late} note="Still short after the delivery date" tone="tone-bad" onClick={() => setList({ view: 'late', title: 'Past delivery' })} />
-            <Kpi label="Vendors" value={data.kpis.vendors} note="In this window" />
-            <Kpi label="Buyers" value={data.kpis.buyers} note="In this window" />
+            <SparkKpi label="Lines" value={data.kpis.lines} note={`${num(Math.round(data.kpis.qty))} pieces ordered`} icon={FileText} swatch="blue" color="#60a5fa" spark={spark(data.trends, 'lines')} onClick={() => setList({ view: 'lines', title: 'Purchase lines' })} />
+            <SparkKpi label="Still short" value={data.kpis.open} note={`${num(Math.round(data.kpis.shortQty))} pieces`} tone="tone-open" icon={Hourglass} swatch="amber" color="#fbbf24" spark={spark(data.trends, 'open')} onClick={() => setList({ view: 'open', title: 'Still short' })} />
+            <SparkKpi label="Filled" value={data.kpis.filled} note="Received covers the order" tone="tone-ok" icon={CircleCheck} swatch="green" color="#34d399" spark={spark(data.trends, 'filled')} onClick={() => setList({ view: 'filled', title: 'Filled' })} />
+            <SparkKpi label="Past delivery" value={data.kpis.late} note="Still short after the delivery date" tone="tone-bad" icon={CalendarDays} swatch="pink" color="#fb7185" spark={spark(data.trends, 'late')} onClick={() => setList({ view: 'late', title: 'Past delivery' })} />
+            <SparkKpi label="Vendors" value={data.kpis.vendors} note="In this window" tone="tone-violet" icon={UsersRound} swatch="violet" color="#c4b5fd" spark={spark(data.trends, 'vendors')} />
+            <SparkKpi label="Buyers" value={data.kpis.buyers} note="In this window" tone="tone-ok" icon={UserRound} swatch="teal" color="#34d399" spark={spark(data.trends, 'buyers')} />
           </section>
           <section className="rings">
             <article className="panel">
-              <h2>Filled against still short</h2>
+              <h2 className="with-ico"><ChartNoAxesColumnIncreasing size={18} /> Filled against still short</h2>
               <p className="muted">A line is short when received quantity is below the order.</p>
               <Donut caption="lines" slices={[
                 { label: 'Filled', value: data.kpis.filled, color: '#3ee0c0', view: 'filled' },
@@ -93,7 +103,7 @@ export default function PurchasingBoard() {
               ]} onPick={(slice) => setList({ view: slice.view, title: slice.label })} />
             </article>
             <article className="panel">
-              <h2>Sheets</h2>
+              <h2 className="with-ico"><PieChart size={18} /> Sheets</h2>
               <p className="muted">Canada, USA, and France purchase sheets.</p>
               <Donut caption="lines" slices={data.sheets.map((row) => ({ label: row.name, value: row.count }))} onPick={(slice) => setList({ view: 'lines', sheet: slice.label, title: slice.label })} />
             </article>
@@ -119,6 +129,22 @@ export default function PurchasingBoard() {
         </>
       )}
     </>
+  )
+}
+
+function spark(rows, key) {
+  return (rows || []).map((row) => row[key] || 0)
+}
+
+function SparkKpi({ label, value, note, tone = '', icon: Icon, swatch, color, spark: values, onClick }) {
+  return (
+    <button type="button" className={`kpi stat ${tone}`} onClick={onClick}>
+      <span className={`kpi-ico ${swatch}`}><Icon size={18} strokeWidth={2} /></span>
+      <p>{label}</p>
+      <strong>{num(value)}</strong>
+      <span>{note}</span>
+      {values?.length > 1 && <Sparkline values={values} color={color} />}
+    </button>
   )
 }
 

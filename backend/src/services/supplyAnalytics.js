@@ -1,4 +1,5 @@
 const { query } = require('../db/mssqlPool');
+const { countTrends } = require('./analyticsUtil');
 
 const DAY = 86400000;
 const CACHE_MS = 60 * 1000;
@@ -406,6 +407,14 @@ async function getBackorderDashboard(options) {
   return {
     window: { months: cutoff ? Number(options.months) : 0, from: cutoff },
     kpis,
+    trends: countTrends(rows, 'noticed', [
+      { key: 'total' },
+      { key: 'open', when: (line) => line.open },
+      { key: 'closed', when: (line) => !line.open },
+      { key: 'stuck', when: (line) => line.open && (line.ageDays || 0) > 30 },
+      { key: 'partsOpen', set: (line) => (line.open ? line.part : null) },
+      { key: 'sopsOpen', set: (line) => (line.open ? line.sopId : null) },
+    ]),
     all,
     findings,
     histogram: BUCKETS.map((bucket) => ({
@@ -551,6 +560,16 @@ async function getPartsDashboard(options) {
 
   return {
     kpis,
+    trends: countTrends(rows, 'noticed', [
+      { key: 'parts', set: (line) => line.part },
+      { key: 'openParts', set: (line) => (line.open ? line.part : null) },
+      { key: 'closed', when: (line) => !line.open },
+      { key: 'qtyShort', sum: (line) => (line.open ? line.shortQty : 0) },
+    ]),
+    purchaseTrends: countTrends(purchaseRows, 'added', [
+      { key: 'poLines' },
+      { key: 'poLate', when: (line) => line.lateDays },
+    ]),
     findings,
     mostOpen: byOpen.slice(0, 12),
     slowest: bySlow.slice(0, 8),

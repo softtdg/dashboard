@@ -1,4 +1,6 @@
+import { CalendarDays, ChartNoAxesColumnIncreasing, CircleCheck, Hourglass, Package, ShoppingCart } from 'lucide-react'
 import { Donut } from '../sop/Charts'
+import { SparkKpi, spark } from '../sop/SparkKpi'
 import { days, num } from '../sop/views'
 import { Meter, TimeCompare } from './Meter'
 
@@ -51,41 +53,17 @@ export default function PartsBoard({ data, error, loading, months, filters, onMo
             {data.findings.map((finding) => <p key={finding}>{finding}</p>)}
           </section>
           <section className="kpis">
-            <button type="button" className="kpi" onClick={() => onOpenLines({ view: 'lines', title: 'Parts in this window' })}>
-              <p>Parts seen</p>
-              <strong>{num(data.kpis.parts)}</strong>
-              <span>On a backorder in this window</span>
-            </button>
-            <button type="button" className="kpi tone-open" onClick={() => onOpenLines({ view: 'open', title: 'Parts still short' })}>
-              <p>Still short</p>
-              <strong>{num(data.kpis.openParts)}</strong>
-              <span>{days(data.kpis.medianOpen)} median waiting</span>
-            </button>
-            <button type="button" className="kpi tone-ok" onClick={() => onOpenLines({ view: 'closed', title: 'Cleared shortages' })}>
-              <p>Cleared shortages</p>
-              <strong>{days(data.kpis.medianClose)}</strong>
-              <span>Median days to clear</span>
-            </button>
-            <button type="button" className="kpi tone-info" onClick={() => onOpenLines({ view: 'open', title: 'Pieces still short' })}>
-              <p>Pieces still short</p>
-              <strong>{num(data.kpis.qtyShort)}</strong>
-              <span>Quantity not received</span>
-            </button>
-            <button type="button" className="kpi tone-open" onClick={() => onOpenPurchases({ title: 'Open purchase lines' })}>
-              <p>Open purchase lines</p>
-              <strong>{num(data.kpis.poLines)}</strong>
-              <span>{num(data.kpis.poQty)} pieces not received</span>
-            </button>
-            <button type="button" className="kpi tone-bad" onClick={() => onOpenPurchases({ view: 'late', title: 'Past the promised date' })}>
-              <p>Past promised date</p>
-              <strong>{num(data.kpis.poLate)}</strong>
-              <span>{num(data.kpis.vendors)} vendors</span>
-            </button>
+            <SparkKpi label="Parts seen" value={data.kpis.parts} note="On a backorder in this window" icon={Package} swatch="blue" color="#60a5fa" spark={spark(data.trends, 'parts')} onClick={() => onOpenLines({ view: 'lines', title: 'Parts in this window' })} />
+            <SparkKpi label="Still short" value={data.kpis.openParts} note={`${days(data.kpis.medianOpen)} median waiting`} tone="tone-open" icon={Hourglass} swatch="amber" color="#fbbf24" spark={spark(data.trends, 'openParts')} onClick={() => onOpenLines({ view: 'open', title: 'Parts still short' })} />
+            <SparkKpi label="Cleared shortages" value={days(data.kpis.medianClose)} note="Median days to clear" tone="tone-ok" icon={CircleCheck} swatch="green" color="#34d399" spark={spark(data.trends, 'closed')} onClick={() => onOpenLines({ view: 'closed', title: 'Cleared shortages' })} />
+            <SparkKpi label="Pieces still short" value={data.kpis.qtyShort} note="Quantity not received" tone="tone-info" icon={Package} swatch="teal" color="#5eead4" spark={spark(data.trends, 'qtyShort')} onClick={() => onOpenLines({ view: 'open', title: 'Pieces still short' })} />
+            <SparkKpi label="Open purchase lines" value={data.kpis.poLines} note={`${num(data.kpis.poQty)} pieces not received`} tone="tone-open" icon={ShoppingCart} swatch="violet" color="#c4b5fd" spark={spark(data.purchaseTrends, 'poLines')} onClick={() => onOpenPurchases({ title: 'Open purchase lines' })} />
+            <SparkKpi label="Past promised date" value={data.kpis.poLate} note={`${num(data.kpis.vendors)} vendors`} tone="tone-bad" icon={CalendarDays} swatch="pink" color="#fb7185" spark={spark(data.purchaseTrends, 'poLate')} onClick={() => onOpenPurchases({ view: 'late', title: 'Past the promised date' })} />
           </section>
 
           <section className="rings">
             <article className="panel">
-              <h2>Parts still short</h2>
+              <h2 className="with-ico"><ChartNoAxesColumnIncreasing size={18} /> Parts still short</h2>
               <p className="muted">Seen on a backorder in this window.</p>
               <Donut
                 caption="parts"

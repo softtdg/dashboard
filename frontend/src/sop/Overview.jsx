@@ -1,5 +1,21 @@
 import { useEffect, useState } from 'react'
-import { Donut, Gauge, Histogram, LineChart, MonthBars, ScatterPlot, Sparkline, StageBars, trendRows } from './Charts'
+import {
+  CalendarClock,
+  CalendarDays,
+  ChartNoAxesColumnIncreasing,
+  CircleCheck,
+  Clock,
+  Factory,
+  FileText,
+  Hourglass,
+  Package,
+  Pencil,
+  RefreshCcw,
+  ShieldAlert,
+  ShoppingCart,
+} from 'lucide-react'
+import { Donut, Gauge, Histogram, LineChart, MonthBars, ScatterPlot, StageBars, trendRows } from './Charts'
+import { SparkKpi, spark } from './SparkKpi'
 import { days, num } from './views'
 import { Meter, TimeCompare } from '../supply/Meter'
 
@@ -12,10 +28,19 @@ const PERIODS = [
   { value: '0', label: 'All since 2015' },
 ]
 
-const SPARKS = {
-  tracked: { key: 'arrived', color: '#f0a05a' },
-  completed: { key: 'completed', color: '#3ee0c0' },
-  open: { key: 'remaining', color: '#7dd3fc' },
+const ICONS = {
+  tracked: [FileText, 'blue', '#60a5fa'],
+  completed: [CircleCheck, 'green', '#34d399'],
+  open: [Hourglass, 'amber', '#fbbf24'],
+  overdue: [CalendarDays, 'pink', '#fb7185'],
+  stuckProduction: [Factory, 'amber', '#fbbf24'],
+  stuckQa: [ShieldAlert, 'violet', '#c4b5fd'],
+  waitingProduction: [Clock, 'teal', '#5eead4'],
+  late: [CalendarClock, 'pink', '#fb7185'],
+  rework: [RefreshCcw, 'violet', '#c4b5fd'],
+  backorder: [Package, 'green', '#34d399'],
+  notifyPurchasing: [ShoppingCart, 'blue', '#7dd3fc'],
+  notifyDesign: [Pencil, 'violet', '#c4b5fd'],
 }
 
 const CARDS = [
@@ -28,9 +53,9 @@ const CARDS = [
   ['waitingProduction', 'Waiting production', 'waitingProduction', 'More than 21 days', 'tone-open'],
   ['late', 'Finished late', 'late', 'After ODD', 'tone-bad'],
   ['rework', 'Rework', 'rework', 'Sent back to production', 'tone-open'],
-  ['backorder', 'Open backorders', 'openBackorders', 'Parts still short', 'tone-open'],
+  ['backorder', 'Open backorders', 'openBackorders', 'Parts still short', 'tone-ok'],
   ['notifyPurchasing', 'Flagged purchasing', 'notifyPurchasing', 'Lead hand still waiting', 'tone-info'],
-  ['notifyDesign', 'Flagged design', 'notifyDesign', 'Lead hand still waiting', 'tone-info'],
+  ['notifyDesign', 'Flagged design', 'notifyDesign', 'Lead hand still waiting', 'tone-violet'],
 ]
 
 export default function Overview({
@@ -88,21 +113,28 @@ export default function Overview({
           </section>
 
           <section className="kpis">
-            {CARDS.map(([view, label, field, note, tone]) => (
-              <button key={view} type="button" className={`kpi ${tone}`} onClick={() => onOpenList({ view, title: label })}>
-                <p>{label}</p>
-                <strong>{num(data.kpis[field])}</strong>
-                {SPARKS[view] && <Sparkline values={trendRows(data.monthly, months).map((row) => row[SPARKS[view].key])} color={SPARKS[view].color} />}
-                <span>
-                  {view === 'completed' ? `${days(data.kpis.medianCycle)} median cycle` : note}
-                </span>
-              </button>
-            ))}
+            {CARDS.map(([view, label, field, note, tone]) => {
+              const [Icon, swatch, color] = ICONS[view]
+              return (
+                <SparkKpi
+                  key={view}
+                  label={label}
+                  value={data.kpis[field]}
+                  note={view === 'completed' ? `${days(data.kpis.medianCycle)} median cycle` : note}
+                  tone={tone}
+                  icon={Icon}
+                  swatch={swatch}
+                  color={color}
+                  spark={spark(data.trends, view)}
+                  onClick={() => onOpenList({ view, title: label })}
+                />
+              )
+            })}
           </section>
 
           <section className="rings">
             <article className="panel">
-              <h2>Completed against open</h2>
+              <h2 className="with-ico"><ChartNoAxesColumnIncreasing size={18} /> Completed against open</h2>
               <p className="muted">Click a slice to open that list.</p>
               <Donut
                 caption="SOPs"

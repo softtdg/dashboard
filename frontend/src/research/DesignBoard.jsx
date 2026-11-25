@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
+import { ChartNoAxesColumnIncreasing, CircleCheck, CircleX, FileText, Hourglass, Pencil, PieChart } from 'lucide-react'
 import { Donut, Histogram } from '../sop/Charts'
+import { SparkKpi, spark } from '../sop/SparkKpi'
 import { days, num } from '../sop/views'
 import { Meter } from '../supply/Meter'
 import { MonthPanel, ResearchList } from './MonthPanel'
@@ -97,16 +99,16 @@ export default function DesignBoard() {
           </section>
           <Findings items={data.findings} />
           <section className="kpis">
-            <Kpi label="Requests" value={data.kpis.requests} note={`${days(data.kpis.medianRequest)} median to issue`} onClick={() => setList({ view: 'requests', title: 'Part number requests' })} />
-            <Kpi label="Still waiting" value={data.kpis.open} note="Number not issued yet" tone="tone-open" onClick={() => setList({ view: 'open', title: 'Still waiting' })} />
-            <Kpi label="Issued" value={data.kpis.done} note="Every part on the request has a number" tone="tone-ok" onClick={() => setList({ view: 'done', title: 'Issued' })} />
-            <Kpi label="Changes" value={data.kpis.changes} note={`${days(data.kpis.medianChange)} median to close`} onClick={() => setList({ view: 'changes', title: 'Change requests' })} />
-            <Kpi label="Rejected" value={data.kpis.rejected} note="Change was turned down" tone="tone-bad" onClick={() => setList({ view: 'rejected', title: 'Rejected changes' })} />
-            <Kpi label="Accepted" value={data.kpis.accepted} note="Change was closed" tone="tone-info" onClick={() => setList({ view: 'accepted', title: 'Accepted changes' })} />
+            <SparkKpi label="Requests" value={data.kpis.requests} note={`${days(data.kpis.medianRequest)} median to issue`} icon={FileText} swatch="blue" color="#60a5fa" spark={spark(data.trends, 'requests')} onClick={() => setList({ view: 'requests', title: 'Part number requests' })} />
+            <SparkKpi label="Still waiting" value={data.kpis.open} note="Number not issued yet" tone="tone-open" icon={Hourglass} swatch="amber" color="#fbbf24" spark={spark(data.trends, 'open')} onClick={() => setList({ view: 'open', title: 'Still waiting' })} />
+            <SparkKpi label="Issued" value={data.kpis.done} note="Every part on the request has a number" tone="tone-ok" icon={CircleCheck} swatch="green" color="#34d399" spark={spark(data.trends, 'done')} onClick={() => setList({ view: 'done', title: 'Issued' })} />
+            <SparkKpi label="Changes" value={data.kpis.changes} note={`${days(data.kpis.medianChange)} median to close`} icon={Pencil} swatch="violet" color="#c4b5fd" spark={spark(data.trends, 'changes')} onClick={() => setList({ view: 'changes', title: 'Change requests' })} />
+            <SparkKpi label="Rejected" value={data.kpis.rejected} note="Change was turned down" tone="tone-bad" icon={CircleX} swatch="pink" color="#fb7185" spark={spark(data.trends, 'rejected')} onClick={() => setList({ view: 'rejected', title: 'Rejected changes' })} />
+            <SparkKpi label="Accepted" value={data.kpis.accepted} note="Change was closed" tone="tone-info" icon={CircleCheck} swatch="teal" color="#5eead4" spark={spark(data.trends, 'accepted')} onClick={() => setList({ view: 'accepted', title: 'Accepted changes' })} />
           </section>
           <section className="rings">
             <article className="panel">
-              <h2>Issued against still waiting</h2>
+              <h2 className="with-ico"><ChartNoAxesColumnIncreasing size={18} /> Issued against still waiting</h2>
               <p className="muted">A request is issued when every part on it has a completion date.</p>
               <Donut caption="requests" slices={[
                 { label: 'Issued', value: data.kpis.done, color: '#3ee0c0', view: 'done' },
@@ -114,7 +116,7 @@ export default function DesignBoard() {
               ]} onPick={(slice) => setList({ view: slice.view, title: slice.label })} />
             </article>
             <article className="panel">
-              <h2>Changes accepted or rejected</h2>
+              <h2 className="with-ico"><PieChart size={18} /> Changes accepted or rejected</h2>
               <p className="muted">Every change in this window is already closed.</p>
               <Donut caption="changes" slices={[
                 { label: 'Accepted', value: data.kpis.accepted, color: '#7dd3fc', view: 'accepted' },

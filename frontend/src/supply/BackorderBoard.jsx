@@ -1,5 +1,15 @@
 import { useEffect, useState } from 'react'
+import {
+  Boxes,
+  CalendarClock,
+  ChartNoAxesColumnIncreasing,
+  CircleCheck,
+  FileText,
+  Hourglass,
+  Package,
+} from 'lucide-react'
 import { Donut, Histogram, MonthBars, OpenStageBars } from '../sop/Charts'
+import { SparkKpi, spark } from '../sop/SparkKpi'
 import { days, num } from '../sop/views'
 import { Meter, TimeCompare } from './Meter'
 
@@ -12,10 +22,10 @@ const PERIODS = [
 ]
 
 const CARDS = [
-  ['lines', 'Backorder lines', 'total', 'In this window', ''],
-  ['open', 'Still short', 'open', null, 'tone-open'],
-  ['closed', 'Cleared', 'closed', null, 'tone-ok'],
-  ['stuck', 'Open over 30 days', 'stuck', 'Still waiting', 'tone-bad'],
+  ['lines', 'Backorder lines', 'total', 'In this window', '', FileText, 'blue', '#60a5fa', 'total'],
+  ['open', 'Still short', 'open', null, 'tone-open', Hourglass, 'amber', '#fbbf24', 'open'],
+  ['closed', 'Cleared', 'closed', null, 'tone-ok', CircleCheck, 'green', '#34d399', 'closed'],
+  ['stuck', 'Open over 30 days', 'stuck', 'Still waiting', 'tone-bad', CalendarClock, 'pink', '#fb7185', 'stuck'],
 ]
 
 export default function BackorderBoard({ data, error, loading, months, filters, onMonths, onFilters, onOpenList }) {
@@ -44,32 +54,31 @@ export default function BackorderBoard({ data, error, loading, months, filters, 
             {data.findings.map((finding) => <p key={finding}>{finding}</p>)}
           </section>
           <section className="kpis">
-            {CARDS.map(([view, label, field, note, tone]) => (
-              <button key={view} type="button" className={`kpi ${tone}`} onClick={() => onOpenList({ view, title: label })}>
-                <p>{label}</p>
-                <strong>{num(data.kpis[field])}</strong>
-                <span>
-                  {view === 'open' && `${days(data.kpis.medianOpen)} median waiting`}
-                  {view === 'closed' && `${days(data.kpis.medianClose)} median to clear`}
-                  {view !== 'open' && view !== 'closed' && note}
-                </span>
-              </button>
+            {CARDS.map(([view, label, field, note, tone, Icon, swatch, color, key]) => (
+              <SparkKpi
+                key={view}
+                label={label}
+                value={data.kpis[field]}
+                note={
+                  view === 'open' ? `${days(data.kpis.medianOpen)} median waiting`
+                    : view === 'closed' ? `${days(data.kpis.medianClose)} median to clear`
+                      : note
+                }
+                tone={tone}
+                icon={Icon}
+                swatch={swatch}
+                color={color}
+                spark={spark(data.trends, key)}
+                onClick={() => onOpenList({ view, title: label })}
+              />
             ))}
-            <button type="button" className="kpi tone-info" onClick={() => onOpenList({ view: 'open', title: 'Parts still short' })}>
-              <p>Parts still short</p>
-              <strong>{num(data.kpis.partsOpen)}</strong>
-              <span>{num(data.kpis.qtyShort)} pieces</span>
-            </button>
-            <button type="button" className="kpi tone-open" onClick={() => onOpenList({ view: 'open', title: 'SOPs with a shortage' })}>
-              <p>SOPs with a shortage</p>
-              <strong>{num(data.kpis.sopsOpen)}</strong>
-              <span>Open backorder on the SOP</span>
-            </button>
+            <SparkKpi label="Parts still short" value={data.kpis.partsOpen} note={`${num(data.kpis.qtyShort)} pieces`} tone="tone-info" icon={Package} swatch="violet" color="#c4b5fd" spark={spark(data.trends, 'partsOpen')} onClick={() => onOpenList({ view: 'open', title: 'Parts still short' })} />
+            <SparkKpi label="SOPs with a shortage" value={data.kpis.sopsOpen} note="Open backorder on the SOP" tone="tone-open" icon={Boxes} swatch="teal" color="#5eead4" spark={spark(data.trends, 'sopsOpen')} onClick={() => onOpenList({ view: 'open', title: 'SOPs with a shortage' })} />
           </section>
 
           <section className="rings">
             <article className="panel">
-              <h2>Still short against cleared</h2>
+              <h2 className="with-ico"><ChartNoAxesColumnIncreasing size={18} /> Still short against cleared</h2>
               <p className="muted">Click a slice to open those lines.</p>
               <Donut
                 caption="lines"

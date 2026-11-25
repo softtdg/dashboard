@@ -107,6 +107,39 @@ function inMonths(day, extra) {
   return months.includes(String(day || '').slice(0, 7));
 }
 
+function countTrends(rows, dayKey, flags) {
+  const map = new Map();
+  rows.forEach((row) => {
+    const day = row[dayKey];
+    if (!day) return;
+    const month = String(day).slice(0, 7);
+    let item = map.get(month);
+    if (!item) {
+      item = { month };
+      flags.forEach((flag) => {
+        item[flag.key] = flag.set ? new Set() : 0;
+      });
+      map.set(month, item);
+    }
+    flags.forEach((flag) => {
+      if (flag.set) {
+        const value = flag.set(row);
+        if (value) item[flag.key].add(value);
+      } else if (flag.sum) item[flag.key] += flag.sum(row) || 0;
+      else if (!flag.when || flag.when(row)) item[flag.key] += 1;
+    });
+  });
+  return [...map.values()]
+    .sort((a, b) => a.month.localeCompare(b.month))
+    .map((item) => {
+      const out = { month: item.month };
+      flags.forEach((flag) => {
+        out[flag.key] = flag.set ? item[flag.key].size : item[flag.key];
+      });
+      return out;
+    });
+}
+
 function monthlyOf(rows, dayKey, openKey) {
   const map = new Map();
   rows.forEach((row) => {
@@ -174,6 +207,7 @@ module.exports = {
   inBucket,
   inMonths,
   monthlyOf,
+  countTrends,
   topCount,
   pageRows,
 };

@@ -1,4 +1,5 @@
 const { query } = require('../db/mssqlPool');
+const { countTrends } = require('./analyticsUtil');
 
 const DAY = 86400000;
 const CACHE_MS = 60 * 1000;
@@ -289,6 +290,16 @@ async function getRmaDashboard(filters) {
       accomCount: rows.filter((row) => row.disposition === 'Accommodation').length,
       ...qty,
     },
+    trends: countTrends(rows, 'logged', [
+      { key: 'total' },
+      { key: 'received', when: (row) => !row.waiting },
+      { key: 'waiting', when: (row) => row.waiting },
+      { key: 'named', when: (row) => row.defect !== 'None' },
+      { key: 'blank', when: (row) => row.defect === 'None' },
+      { key: 'repair', when: (row) => row.disposition === 'Repair' },
+      { key: 'warranty', when: (row) => row.disposition === 'Warranty' },
+      { key: 'accom', when: (row) => row.disposition === 'Accommodation' },
+    ]),
     histogram: histogram(received, (row) => row.receiveDays),
     disposition: dispositionOrder
       .map((label) => ({ label, count: rows.filter((row) => row.disposition === label).length }))

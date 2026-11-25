@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
+import { CalendarDays, ChartNoAxesColumnIncreasing, CircleCheck, FileText, Hourglass, UsersRound } from 'lucide-react'
 import { Donut } from '../sop/Charts'
+import { SparkKpi, spark } from '../sop/SparkKpi'
 import { num } from '../sop/views'
 import { Meter } from '../supply/Meter'
 import { MonthPanel } from './MonthPanel'
-import { Findings, Kpi, LineFetch, Select, Window } from './DesignBoard'
+import { Findings, LineFetch, Select, Window } from './DesignBoard'
 
 export default function SalesBoard() {
   const [months, setMonths] = useState('24')
@@ -76,14 +78,14 @@ export default function SalesBoard() {
           </section>
           <Findings items={data.findings} />
           <section className="kpis">
-            <Kpi label="Orders" value={data.kpis.orders} note={`${num(data.kpis.booked)} booked`} onClick={() => setList({ view: 'orders', title: 'Sales orders' })} />
-            <Kpi label="Open" value={data.kpis.open} note={`${num(data.kpis.balance)} still to invoice`} tone="tone-open" onClick={() => setList({ view: 'open', title: 'Open orders' })} />
-            <Kpi label="Closed" value={data.kpis.closed} note="Nothing left to invoice" tone="tone-ok" onClick={() => setList({ view: 'closed', title: 'Closed orders' })} />
-            <Kpi label="Past promise" value={data.kpis.late} note="Open and the promised date has passed" tone="tone-bad" onClick={() => setList({ view: 'late', title: 'Past promise' })} />
-            <Kpi label="Customers" value={data.kpis.customers} note="In this window" />
+            <SparkKpi label="Orders" value={data.kpis.orders} note={`${num(data.kpis.booked)} booked`} icon={FileText} swatch="blue" color="#60a5fa" spark={spark(data.trends, 'orders')} onClick={() => setList({ view: 'orders', title: 'Sales orders' })} />
+            <SparkKpi label="Open" value={data.kpis.open} note={`${num(data.kpis.balance)} still to invoice`} tone="tone-open" icon={Hourglass} swatch="amber" color="#fbbf24" spark={spark(data.trends, 'open')} onClick={() => setList({ view: 'open', title: 'Open orders' })} />
+            <SparkKpi label="Closed" value={data.kpis.closed} note="Nothing left to invoice" tone="tone-ok" icon={CircleCheck} swatch="green" color="#34d399" spark={spark(data.trends, 'closed')} onClick={() => setList({ view: 'closed', title: 'Closed orders' })} />
+            <SparkKpi label="Past promise" value={data.kpis.late} note="Open and the promised date has passed" tone="tone-bad" icon={CalendarDays} swatch="pink" color="#fb7185" spark={spark(data.trends, 'late')} onClick={() => setList({ view: 'late', title: 'Past promise' })} />
+            <SparkKpi label="Customers" value={data.kpis.customers} note="In this window" icon={UsersRound} swatch="violet" color="#c4b5fd" spark={spark(data.trends, 'customers')} />
           </section>
           <article className="panel">
-            <h2>Open against closed</h2>
+            <h2 className="with-ico"><ChartNoAxesColumnIncreasing size={18} /> Open against closed</h2>
             <p className="muted">Open means the order still has a balance.</p>
             <Donut caption="orders" slices={[
               { label: 'Open', value: data.kpis.open, color: '#f0a05a', view: 'open' },

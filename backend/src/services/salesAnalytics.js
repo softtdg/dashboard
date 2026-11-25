@@ -1,7 +1,7 @@
 const { connectDB } = require('../db/conn');
 const {
   realDate, iso, text, number, cutoffFor, inWindow, todayIso, pretty,
-  countText, inMonths, monthlyOf, topCount, pageRows,
+  countText, inMonths, monthlyOf, countTrends, topCount, pageRows,
 } = require('./analyticsUtil');
 
 const CACHE_MS = 60 * 1000;
@@ -85,6 +85,13 @@ async function getSalesDashboard(filters) {
       booked: Math.round(booked),
       customers: new Set(rows.map((row) => row.customer)).size,
     },
+    trends: countTrends(rows, 'ordered', [
+      { key: 'orders' },
+      { key: 'open', when: (row) => row.open },
+      { key: 'closed', when: (row) => !row.open },
+      { key: 'late', when: (row) => row.late },
+      { key: 'customers', set: (row) => row.customer },
+    ]),
     monthly: monthlyOf(history, 'ordered', 'open'),
     all: {
       arrived: history.length,

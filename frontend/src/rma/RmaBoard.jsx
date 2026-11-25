@@ -1,5 +1,17 @@
 import { useEffect, useState } from 'react'
+import {
+  CalendarOff,
+  ChartNoAxesColumnIncreasing,
+  CircleOff,
+  FileText,
+  Handshake,
+  PackageCheck,
+  Shield,
+  Tag,
+  Wrench,
+} from 'lucide-react'
 import { Donut, Histogram, MonthBars } from '../sop/Charts'
+import { SparkKpi, spark } from '../sop/SparkKpi'
 import { days, num } from '../sop/views'
 import { Meter, TimeCompare } from '../supply/Meter'
 
@@ -89,19 +101,19 @@ export default function RmaBoard() {
             {data.findings.map((finding) => <p key={finding}>{finding}</p>)}
           </section>
           <section className="kpis">
-            <Kpi label="RMAs" value={data.kpis.total} note="Logged in this window" onClick={() => setList({ view: 'window', title: 'RMAs' })} />
-            <Kpi label="Parts received" value={data.kpis.received} note={`${days(data.kpis.medianReceive)} median`} tone="tone-ok" onClick={() => setList({ view: 'received', title: 'Parts received' })} />
-            <Kpi label="No receive date" value={data.kpis.waiting} note="Date missing or not real" tone="tone-open" onClick={() => setList({ view: 'waiting', title: 'No receive date' })} />
-            <Kpi label="Named defect" value={data.kpis.named} note="A code other than None" tone="tone-info" onClick={() => setList({ view: 'named', title: 'Named defect' })} />
-            <Kpi label="Coded None" value={data.kpis.blank} note="No defect was named" tone="tone-bad" onClick={() => setList({ view: 'blank', title: 'Coded None' })} />
-            <Kpi label="Repair" value={data.kpis.repairCount} note={`${num(data.kpis.repairQty)} pieces`} onClick={() => setList({ view: 'window', item: 'Repair', title: 'Repair' })} />
-            <Kpi label="Warranty" value={data.kpis.warrantyCount} note={`${num(data.kpis.warrantyQty)} pieces`} onClick={() => setList({ view: 'window', item: 'Warranty', title: 'Warranty' })} />
-            <Kpi label="Accommodation" value={data.kpis.accomCount} note={`${num(data.kpis.accomQty)} pieces`} onClick={() => setList({ view: 'window', item: 'Accommodation', title: 'Accommodation' })} />
+            <SparkKpi label="RMAs" value={data.kpis.total} note="Logged in this window" icon={FileText} swatch="blue" color="#60a5fa" spark={spark(data.trends, 'total')} onClick={() => setList({ view: 'window', title: 'RMAs' })} />
+            <SparkKpi label="Parts received" value={data.kpis.received} note={`${days(data.kpis.medianReceive)} median`} tone="tone-ok" icon={PackageCheck} swatch="green" color="#34d399" spark={spark(data.trends, 'received')} onClick={() => setList({ view: 'received', title: 'Parts received' })} />
+            <SparkKpi label="No receive date" value={data.kpis.waiting} note="Date missing or not real" tone="tone-open" icon={CalendarOff} swatch="amber" color="#fbbf24" spark={spark(data.trends, 'waiting')} onClick={() => setList({ view: 'waiting', title: 'No receive date' })} />
+            <SparkKpi label="Named defect" value={data.kpis.named} note="A code other than None" tone="tone-info" icon={Tag} swatch="teal" color="#5eead4" spark={spark(data.trends, 'named')} onClick={() => setList({ view: 'named', title: 'Named defect' })} />
+            <SparkKpi label="Coded None" value={data.kpis.blank} note="No defect was named" tone="tone-bad" icon={CircleOff} swatch="pink" color="#fb7185" spark={spark(data.trends, 'blank')} onClick={() => setList({ view: 'blank', title: 'Coded None' })} />
+            <SparkKpi label="Repair" value={data.kpis.repairCount} note={`${num(data.kpis.repairQty)} pieces`} icon={Wrench} swatch="violet" color="#c4b5fd" spark={spark(data.trends, 'repair')} onClick={() => setList({ view: 'window', item: 'Repair', title: 'Repair' })} />
+            <SparkKpi label="Warranty" value={data.kpis.warrantyCount} note={`${num(data.kpis.warrantyQty)} pieces`} icon={Shield} swatch="blue" color="#7dd3fc" spark={spark(data.trends, 'warranty')} onClick={() => setList({ view: 'window', item: 'Warranty', title: 'Warranty' })} />
+            <SparkKpi label="Accommodation" value={data.kpis.accomCount} note={`${num(data.kpis.accomQty)} pieces`} icon={Handshake} swatch="green" color="#34d399" spark={spark(data.trends, 'accom')} onClick={() => setList({ view: 'window', item: 'Accommodation', title: 'Accommodation' })} />
           </section>
 
           <section className="rings">
             <article className="panel">
-              <h2>Received against still open</h2>
+              <h2 className="with-ico"><ChartNoAxesColumnIncreasing size={18} /> Received against still open</h2>
               <p className="muted">A receive date in 2015 or later counts as received. Click a slice.</p>
               <Donut
                 caption="RMAs"
@@ -191,16 +203,6 @@ export default function RmaBoard() {
         </>
       )}
     </>
-  )
-}
-
-function Kpi({ label, value, note, tone = '', onClick }) {
-  return (
-    <button type="button" className={`kpi ${tone}`} onClick={onClick}>
-      <p>{label}</p>
-      <strong>{num(value)}</strong>
-      <span>{note}</span>
-    </button>
   )
 }
 

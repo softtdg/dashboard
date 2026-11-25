@@ -1,4 +1,5 @@
 const { query } = require('../db/mssqlPool');
+const { countTrends } = require('./analyticsUtil');
 
 const DAY = 86400000;
 const CACHE_MS = 60 * 1000;
@@ -609,6 +610,20 @@ async function getDashboard({ months = 24, customer, program, leadHand, location
     kpis,
     stages,
     monthly,
+    trends: countTrends(scoped, 'entered', [
+      { key: 'tracked' },
+      { key: 'completed', when: (row) => !row.open },
+      { key: 'open', when: (row) => row.open },
+      { key: 'overdue', when: (row) => row.open && row.overdueDays },
+      { key: 'stuckProduction', when: (row) => row.open && row.stage === 'Production' && row.inStageDays > 21 },
+      { key: 'stuckQa', when: (row) => row.open && row.stage === 'QA' && row.inStageDays > 7 },
+      { key: 'waitingProduction', when: (row) => row.open && row.stage === 'Waiting production' && row.inStageDays > 21 },
+      { key: 'late', when: (row) => row.lateDays > 0 },
+      { key: 'rework', when: (row) => !row.open && row.rework },
+      { key: 'backorder', when: (row) => row.open && row.openBackorders > 0 },
+      { key: 'notifyPurchasing', when: (row) => row.open && row.notifyPurchasing > 0 },
+      { key: 'notifyDesign', when: (row) => row.open && row.notifyDesign > 0 },
+    ]),
     findings: buildFindings(kpis, stages, customers, compare),
     histogram,
     scatter,

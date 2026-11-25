@@ -1,7 +1,7 @@
 const { query } = require('../db/mssqlPool');
 const {
   realDate, iso, spanDays, median, round1, text, cutoffFor, inWindow,
-  countText, histogram, inBucket, inMonths, monthlyOf, topCount, pageRows,
+  countText, histogram, inBucket, inMonths, monthlyOf, countTrends, topCount, pageRows,
 } = require('./analyticsUtil');
 
 const CACHE_MS = 60 * 1000;
@@ -107,6 +107,16 @@ function scoped(rows, filters, cutoff) {
   });
 }
 
+function mergeTrends(groups) {
+  const map = new Map();
+  groups.flat().forEach((row) => {
+    const item = map.get(row.month) || { month: row.month };
+    Object.assign(item, row);
+    map.set(row.month, item);
+  });
+  return [...map.values()].sort((a, b) => a.month.localeCompare(b.month));
+}
+
 async function getDesignDashboard(filters) {
   const { requestRows, changeRows } = await loadRows();
   const cutoff = cutoffFor(filters.months);
@@ -136,6 +146,18 @@ async function getDesignDashboard(filters) {
       accepted: changes.length - rejected.length,
       medianChange: round1(changeDays),
     },
+    trends: mergeTrends([
+      countTrends(requests, 'asked', [
+        { key: 'requests' },
+        { key: 'open', when: (row) => row.open },
+        { key: 'done', when: (row) => !row.open },
+      ]),
+      countTrends(changes, 'asked', [
+        { key: 'changes' },
+        { key: 'rejected', when: (row) => row.rejected },
+        { key: 'accepted', when: (row) => !row.rejected },
+      ]),
+    ]),
     requestAge: histogram(requests.filter((row) => row.days != null).map((row) => row.days)),
     changeAge: histogram(changes.filter((row) => row.days != null).map((row) => row.days)),
     monthly: monthlyOf(history, 'asked', 'open'),

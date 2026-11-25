@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Cog, FileText, House, Layers, Package, Pencil, RefreshCcw, ShoppingCart } from 'lucide-react'
 import logo from './assets/tdg-logo.png'
 import './App.css'
 import Detail from './sop/Detail'
@@ -14,14 +15,14 @@ import PurchasingBoard from './research/PurchasingBoard'
 import SalesBoard from './research/SalesBoard'
 
 const TABS = [
-  { id: 'sop', label: 'SOP', name: 'SOP', tone: 'copper' },
-  { id: 'backorder', label: 'Backorder', name: 'Backorder', tone: 'rose' },
-  { id: 'parts', label: 'Parts', name: 'Parts', tone: 'sky' },
-  { id: 'rma', label: 'RMA', name: 'RMA', tone: 'violet' },
-  { id: 'design', label: 'Design', name: 'Design', tone: 'teal' },
-  { id: 'purchasing', label: 'Purchasing', name: 'Purchasing', tone: 'sand' },
-  { id: 'sales', label: 'Sales', name: 'Sales', tone: 'sky' },
-  { id: 'inventory', label: 'Inventory', name: 'Inventory', tone: 'teal' },
+  { id: 'sop', label: 'SOP', name: 'SOP', tone: 'copper', icon: FileText },
+  { id: 'backorder', label: 'Backorder', name: 'Backorder', tone: 'rose', icon: Package },
+  { id: 'parts', label: 'Parts', name: 'Parts', tone: 'sky', icon: Cog },
+  { id: 'rma', label: 'RMA', name: 'RMA', tone: 'violet', icon: RefreshCcw },
+  { id: 'design', label: 'Design', name: 'Design', tone: 'teal', icon: Pencil },
+  { id: 'purchasing', label: 'Purchasing', name: 'Purchasing', tone: 'sand', icon: ShoppingCart },
+  { id: 'sales', label: 'Sales', name: 'Sales', tone: 'sky', icon: House },
+  { id: 'inventory', label: 'Inventory', name: 'Inventory', tone: 'teal', icon: Layers },
 ]
 
 export default function App() {
@@ -90,8 +91,8 @@ export default function App() {
   const current = TABS.find((item) => item.id === tab)
 
   return (
-    <div className="app">
-      <div className={`shell tone-${current?.tone || 'copper'}`}>
+    <div className={`app tone-${current?.tone || 'copper'}`}>
+      <div className="shell">
         <div className="brand">
           <img src={logo} alt="TDG Transit Design Group" />
         </div>
@@ -99,26 +100,27 @@ export default function App() {
           <span className="shell-kicker">Research</span>
           <p className="shell-name">{current?.name} <em>Dashboard</em></p>
         </div>
-        <nav className="tabs" aria-label="Dashboards">
-          {TABS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              data-tone={item.tone}
-              className={tab === item.id ? 'on' : ''}
-              onClick={() => {
-                setTab(item.id)
-                setList(null)
-                setDetailId(null)
-                setSupply(null)
-              }}
-            >
-              <span className="tab-dot" aria-hidden="true" />
-              {item.label}
-            </button>
-          ))}
-        </nav>
       </div>
+
+      <div className="stage">
+      <nav className="tabs" aria-label="Dashboards">
+        {TABS.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            className={tab === item.id ? 'on' : ''}
+            onClick={() => {
+              setTab(item.id)
+              setList(null)
+              setDetailId(null)
+              setSupply(null)
+            }}
+          >
+            <span className="tab-ico"><item.icon size={18} strokeWidth={1.8} /></span>
+            {item.label}
+          </button>
+        ))}
+      </nav>
 
       <main>
         {tab === 'sop' && !list && (
@@ -207,6 +209,7 @@ export default function App() {
           />
         )}
       </main>
+      </div>
 
       {detailId && <Detail sopId={detailId} onClose={() => setDetailId(null)} />}
     </div>

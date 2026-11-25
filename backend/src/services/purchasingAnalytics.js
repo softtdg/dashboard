@@ -64,6 +64,33 @@ function scoped(rows, filters, cutoff) {
   });
 }
 
+function trendsOf(rows) {
+  const map = new Map();
+  rows.forEach((row) => {
+    if (!row.ordered) return;
+    const month = row.ordered.slice(0, 7);
+    const item = map.get(month) || { month, lines: 0, open: 0, filled: 0, late: 0, vendors: new Set(), buyers: new Set() };
+    item.lines += 1;
+    if (row.open) item.open += 1;
+    else item.filled += 1;
+    if (row.late) item.late += 1;
+    if (row.vendor) item.vendors.add(row.vendor);
+    if (row.buyer) item.buyers.add(row.buyer);
+    map.set(month, item);
+  });
+  return [...map.values()]
+    .sort((a, b) => a.month.localeCompare(b.month))
+    .map((item) => ({
+      month: item.month,
+      lines: item.lines,
+      open: item.open,
+      filled: item.filled,
+      late: item.late,
+      vendors: item.vendors.size,
+      buyers: item.buyers.size,
+    }));
+}
+
 async function getPurchasingDashboard(filters) {
   const allRows = await loadRows();
   const cutoff = cutoffFor(filters.months);
@@ -86,6 +113,7 @@ async function getPurchasingDashboard(filters) {
       buyers: new Set(rows.map((row) => row.buyer)).size,
     },
     monthly: monthlyOf(history, 'ordered', 'open'),
+    trends: trendsOf(rows),
     all: {
       arrived: history.length,
       completed: history.filter((row) => !row.open).length,
