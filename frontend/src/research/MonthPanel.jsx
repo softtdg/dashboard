@@ -4,7 +4,7 @@ import { num } from '../sop/views'
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-export function MonthPanel({ monthly, all, labels, onOpen }) {
+export function MonthPanel({ monthly, all, labels, onOpen, hideAll = false }) {
   const years = [...new Set(monthly.map((row) => row.month.slice(0, 4)))].sort((a, b) => b.localeCompare(a))
   const [year, setYear] = useState(years[0] || '')
   const [picked, setPicked] = useState([])
@@ -42,20 +42,22 @@ export function MonthPanel({ monthly, all, labels, onOpen }) {
 
   return (
     <section className="panel">
-      <div className="all-total">
-        <button type="button" onClick={() => open([], 'arrived', labels.all)}>
-          <span>{labels.all}</span>
-          <strong>{num(all.arrived)}</strong>
-        </button>
-        <button type="button" className="tone-ok" onClick={() => open([], 'completed', labels.done)}>
-          <span>{labels.done}</span>
-          <strong>{num(all.completed)}</strong>
-        </button>
-        <button type="button" className="tone-open" onClick={() => open([], 'remaining', labels.still)}>
-          <span>{labels.still}</span>
-          <strong>{num(all.remaining)}</strong>
-        </button>
-      </div>
+      {!hideAll && (
+        <div className="all-total">
+          <button type="button" onClick={() => open([], 'arrived', labels.all)}>
+            <span>{labels.all}</span>
+            <strong>{num(all.arrived)}</strong>
+          </button>
+          <button type="button" className="tone-ok" onClick={() => open([], 'completed', labels.done)}>
+            <span>{labels.done}</span>
+            <strong>{num(all.completed)}</strong>
+          </button>
+          <button type="button" className="tone-open" onClick={() => open([], 'remaining', labels.still)}>
+            <span>{labels.still}</span>
+            <strong>{num(all.remaining)}</strong>
+          </button>
+        </div>
+      )}
       <div className="list-head">
         <div>
           <h2>Month by month</h2>

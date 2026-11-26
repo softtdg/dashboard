@@ -3,6 +3,7 @@ const { getDesignDashboard, listDesignLines } = require('../services/designAnaly
 const { getPurchasingDashboard, listPurchasingLines } = require('../services/purchasingAnalytics');
 const { getSalesDashboard, listSalesOrders } = require('../services/salesAnalytics');
 const { getInventoryDashboard, listInventoryParts } = require('../services/inventoryAnalytics');
+const { getMpfDashboard, listMpfRequests } = require('../services/mpfAnalytics');
 
 const router = express.Router();
 
@@ -20,6 +21,7 @@ function filters(req) {
     currency: req.query.currency || '',
     location: req.query.location || '',
     category: req.query.category || '',
+    region: req.query.region || '',
     part: req.query.part || '',
     view: req.query.view || '',
     q: req.query.q || '',
@@ -54,5 +56,7 @@ router.get('/sales', send(getSalesDashboard));
 router.get('/sales/lines', send(listSalesOrders));
 router.get('/inventory', send(getInventoryDashboard));
 router.get('/inventory/lines', send(listInventoryParts));
+router.get('/mpf', send(getMpfDashboard));
+router.get('/mpf/lines', send(listMpfRequests));
 
 module.exports = router;

@@ -60,6 +60,7 @@ button, input, select { font: inherit; color: inherit; }
 .tone-violet { --accent: var(--violet); --glow: rgba(167, 139, 250, 0.28); }
 .tone-teal { --accent: var(--teal); --glow: rgba(62, 224, 192, 0.22); }
 .tone-sand { --accent: #fde68a; --glow: rgba(253, 230, 138, 0.24); }
+.tone-amber { --accent: #fbbf24; --glow: rgba(251, 191, 36, 0.24); }
 
 .brand {
   display: flex;
@@ -334,6 +335,7 @@ button.kpi.stat .spark { grid-area: spark; width: 92px; height: 40px; margin: 0;
 .panel h2 { margin-bottom: 4px; }
 h2.with-ico { display: flex; align-items: center; gap: 8px; }
 h2.with-ico svg { flex: none; color: var(--accent); }
+
 
 .bars, .rank, .stage-list { list-style: none; margin: 14px 0 0; padding: 0; }
 .bars li { display: grid; gap: 6px; margin-bottom: 12px; }

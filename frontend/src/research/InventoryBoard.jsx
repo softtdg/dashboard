@@ -7,7 +7,7 @@ import { Meter } from '../supply/Meter'
 import { Findings, LineFetch, Select } from './DesignBoard'
 
 export default function InventoryBoard() {
-  const [filters, setFilters] = useState({ category: '' })
+  const [filters, setFilters] = useState({ category: '', region: 'Canada' })
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
@@ -16,7 +16,7 @@ export default function InventoryBoard() {
   useEffect(() => {
     const controller = new AbortController()
     const params = new URLSearchParams()
-    if (filters.category) params.set('category', filters.category)
+    Object.entries(filters).forEach(([key, value]) => { if (value) params.set(key, value) })
     setLoading(true)
     setError('')
     fetch(`/api/research/inventory?${params}`, { signal: controller.signal })
@@ -38,11 +38,13 @@ export default function InventoryBoard() {
         months="0"
         filters={filters}
         onBack={() => setList(null)}
-        columns={[['part', 'Part'], ['location', 'Location'], ['qty', 'On hand'], ['value', 'Value']]}
+        columns={[['part', 'Part'], ['region', 'File'], ['category', 'Category'], ['location', 'Location'], ['qty', 'On hand'], ['value', 'Value']]}
         placeholder="Part, description, location"
         render={(row) => (
           <tr key={row.id}>
             <td>{row.part || '—'}<div className="clip muted">{row.description}</div></td>
+            <td>{row.region}</td>
+            <td>{row.category}</td>
             <td>{row.location}</td>
             <td className={row.zero ? 'late' : ''}>{num(Math.round(row.qty))}</td>
             <td>{num(Math.round(row.value))}</td>
@@ -57,22 +59,23 @@ export default function InventoryBoard() {
       <header>
         <div>
           <p className="eyebrow">Inventory research</p>
-          <h1>What Canada has on hand</h1>
+          <h1>{filters.region === 'USA' ? 'What the USA file lists' : filters.region === 'Canada' ? 'What Canada has on hand' : 'Canada and USA stock'}</h1>
         </div>
       </header>
       {error && <p className="banner">{error}</p>}
       {!data && loading && <p className="muted">Reading stock…</p>}
       {data && (
         <>
-          {data.options.categories.length > 0 && (
-            <section className="filters">
-              <Select label="Category" value={filters.category} options={data.options.categories} onChange={(category) => setFilters({ category })} />
-              {loading && <span className="muted">Updating…</span>}
-            </section>
-          )}
+          <section className="filters">
+            <Select label="File" value={filters.region} options={['Canada', 'USA']} onChange={(region) => setFilters({ ...filters, region, category: '' })} />
+            {data.options.categories.length > 0 && (
+              <Select label="Category" value={filters.category} options={data.options.categories} onChange={(category) => setFilters({ ...filters, category })} />
+            )}
+            {loading && <span className="muted">Updating…</span>}
+          </section>
           <Findings items={data.findings} />
           <section className="kpis">
-            <SparkKpi label="Parts" value={data.kpis.parts} note="Canada stock file" icon={Package} swatch="blue" color="#60a5fa" onClick={() => setList({ view: 'parts', title: 'Canada parts' })} />
+            <SparkKpi label="Parts" value={data.kpis.parts} note={filters.region === 'USA' ? 'USA stock file' : filters.region === 'Canada' ? 'Canada stock file' : 'Canada and USA files'} icon={Package} swatch="blue" color="#60a5fa" onClick={() => setList({ view: 'parts', title: filters.region === 'USA' ? 'USA parts' : filters.region === 'Canada' ? 'Canada parts' : 'Canada and USA parts' })} />
             <SparkKpi label="In stock" value={data.kpis.stocked} note={`${num(data.kpis.qty)} pieces`} tone="tone-ok" icon={PackageCheck} swatch="green" color="#34d399" onClick={() => setList({ view: 'stocked', title: 'In stock' })} />
             <SparkKpi label="Nothing on hand" value={data.kpis.zero} note="Quantity is zero" tone="tone-bad" icon={PackageX} swatch="pink" color="#fb7185" onClick={() => setList({ view: 'zero', title: 'Nothing on hand' })} />
             <SparkKpi label="On-hand value" value={data.kpis.value} note="Quantity times stored unit price" tone="tone-info" icon={CircleDollarSign} swatch="amber" color="#fbbf24" />
@@ -96,6 +99,11 @@ export default function InventoryBoard() {
               <h2>Highest quantities</h2>
               <p className="muted">The parts with the most pieces on hand.</p>
               <Meter rows={data.parts.map((row) => ({ key: row.name, label: row.name, amount: row.count, figure: num(row.count), note: row.location }))} onPick={(row) => setList({ view: 'parts', part: row.label, title: row.label })} />
+            </article>
+            <article className="panel">
+              <h2>Categories</h2>
+              <p className="muted">Bar length is parts in that category. Click one to list them.</p>
+              <Meter rows={data.categories.map((row) => ({ key: row.name, label: row.name, amount: row.count, figure: num(row.count), note: `${num(row.count)} parts` }))} onPick={(row) => setList({ view: 'parts', category: row.label, title: row.label })} />
             </article>
           </section>
         </>

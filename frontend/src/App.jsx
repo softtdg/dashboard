@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Cog, FileText, House, Layers, Package, Pencil, RefreshCcw, ShoppingCart } from 'lucide-react'
+import { ClipboardList, Cog, FileText, House, Layers, Package, Pencil, RefreshCcw, ShoppingCart } from 'lucide-react'
 import logo from './assets/tdg-logo.png'
 import './App.css'
 import Detail from './sop/Detail'
@@ -12,6 +12,7 @@ import RmaBoard from './rma/RmaBoard'
 import DesignBoard from './research/DesignBoard'
 import InventoryBoard from './research/InventoryBoard'
 import PurchasingBoard from './research/PurchasingBoard'
+import MpfBoard from './research/MpfBoard'
 import SalesBoard from './research/SalesBoard'
 
 const TABS = [
@@ -23,6 +24,7 @@ const TABS = [
   { id: 'purchasing', label: 'Purchasing', name: 'Purchasing', tone: 'sand', icon: ShoppingCart },
   { id: 'sales', label: 'Sales', name: 'Sales', tone: 'sky', icon: House },
   { id: 'inventory', label: 'Inventory', name: 'Inventory', tone: 'teal', icon: Layers },
+  { id: 'mpf', label: 'MPF', name: 'MPF', tone: 'amber', icon: ClipboardList },
 ]
 
 export default function App() {
@@ -197,6 +199,7 @@ export default function App() {
         {tab === 'purchasing' && <PurchasingBoard />}
         {tab === 'sales' && <SalesBoard />}
         {tab === 'inventory' && <InventoryBoard />}
+        {tab === 'mpf' && <MpfBoard />}
         {tab === 'parts' && list && list.kind !== 'purchase' && (
           <LineList
             key={JSON.stringify(list)}

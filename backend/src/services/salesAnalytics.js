@@ -1,8 +1,17 @@
 const { connectDB } = require('../db/conn');
 const {
-  realDate, iso, text, number, cutoffFor, inWindow, todayIso, pretty,
+  iso, text, number, cutoffFor, inWindow, todayIso, pretty,
   countText, inMonths, monthlyOf, countTrends, topCount, pageRows,
 } = require('./analyticsUtil');
+
+function salesDate(value) {
+  if (value == null || value === '') return null;
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  const year = date.getUTCFullYear();
+  if (year < 1990 || year > 2100) return null;
+  return date;
+}
 
 const CACHE_MS = 60 * 1000;
 let cache = null;
@@ -19,14 +28,10 @@ async function loadRows() {
       .toArray();
     const today = todayIso();
     const rows = [];
-    let before2015 = 0;
     docs.forEach((doc) => {
-      const ordered = realDate(doc.date);
-      if (!ordered) {
-        if (doc.date && String(doc.date) < '2015-01-01') before2015 += 1;
-        return;
-      }
-      const odd = realDate(doc.ODD);
+      const ordered = salesDate(doc.date);
+      if (!ordered) return;
+      const odd = salesDate(doc.ODD);
       const open = String(doc.status || '').toLowerCase() === 'open';
       rows.push({
         id: String(doc._id),
@@ -44,7 +49,7 @@ async function loadRows() {
         late: open && iso(odd) != null && iso(odd) < today,
       });
     });
-    cache = { at: Date.now(), rows, before2015 };
+    cache = { at: Date.now(), rows };
     loading = null;
     return cache;
   })().catch((error) => {
@@ -108,7 +113,9 @@ async function getSalesDashboard(filters) {
       currencies: [...new Set(loaded.rows.map((row) => row.currency))].sort(),
     },
     findings: [
-      `Sales orders in view run from ${pretty(dates[0])} to ${pretty(dates.at(-1))}. ${countText(loaded.before2015)} orders dated before 2015 stay outside this page.`,
+      cutoff
+        ? `The full book runs from ${pretty(dates[0])} to ${pretty(dates.at(-1))}. The cards use the selected window.`
+        : `Every stored sales order is included, from ${pretty(dates[0])} to ${pretty(dates.at(-1))}.`,
       `${countText(open.length)} orders are still open, with ${countText(Math.round(balance))} still to invoice. ${countText(late.length)} are already past the promised date.`,
       currencies.length > 1
         ? `Amounts are stored in ${currencies.join(', ')} and added as recorded.`

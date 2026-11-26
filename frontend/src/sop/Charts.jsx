@@ -12,7 +12,7 @@ function ticks(max, count) {
 
 const RING = ['#3ee0c0', '#f0a05a', '#a78bfa', '#7dd3fc', '#fb7185', '#fde68a', '#94a3b8']
 
-export function Donut({ slices, center, caption = 'total', onPick }) {
+export function Donut({ slices, center, caption = 'total', onPick, keepZero = false }) {
   const drawn = slices.filter((slice) => slice.value > 0)
   const total = drawn.reduce((sum, slice) => sum + slice.value, 0)
   const radius = 52
@@ -50,7 +50,7 @@ export function Donut({ slices, center, caption = 'total', onPick }) {
         <text className="donut-cap" x="80" y="96" textAnchor="middle">{caption}</text>
       </svg>
       <ul className="donut-legend">
-        {drawn.map((slice, index) => (
+        {(keepZero ? slices : drawn).map((slice, index) => (
           <li key={slice.label}>
             <button type="button" onClick={() => onPick?.(slice)}>
               <i style={{ background: slice.color || RING[index % RING.length] }} />

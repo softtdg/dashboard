@@ -178,12 +178,12 @@ function DesignDetail({ row, onClose }) {
   )
 }
 
-export function Window({ months, onMonths }) {
+export function Window({ months, onMonths, periods = PERIODS }) {
   return (
     <label>
       Window
       <select value={months} onChange={(event) => onMonths(event.target.value)}>
-        {PERIODS.map((period) => <option key={period.value} value={period.value}>{period.label}</option>)}
+        {periods.map((period) => <option key={period.value} value={period.value}>{period.label}</option>)}
       </select>
     </label>
   )
@@ -244,7 +244,7 @@ export function LineFetch({ path, query, months, filters, onBack, columns, place
     const controller = new AbortController()
     const params = new URLSearchParams({ months: months || '0', view: query.view || '', page: String(page), pageSize: '40' })
     const merged = { ...filters, ...query }
-    ;['customer', 'project', 'requester', 'field', 'vendor', 'buyer', 'sheet', 'item', 'currency', 'location', 'category', 'part'].forEach((key) => {
+    ;['customer', 'project', 'requester', 'field', 'vendor', 'buyer', 'sheet', 'item', 'currency', 'location', 'category', 'part', 'region'].forEach((key) => {
       if (merged[key]) params.set(key, merged[key])
     })
     if (query.entryMonth) params.set('entryMonth', query.entryMonth)

@@ -7,8 +7,15 @@ import { Meter } from '../supply/Meter'
 import { MonthPanel } from './MonthPanel'
 import { Findings, LineFetch, Select, Window } from './DesignBoard'
 
+const SALES_PERIODS = [
+  { value: '12', label: 'Last 12 months' },
+  { value: '24', label: 'Last 24 months' },
+  { value: '36', label: 'Last 36 months' },
+  { value: '0', label: 'All orders' },
+]
+
 export default function SalesBoard() {
-  const [months, setMonths] = useState('24')
+  const [months, setMonths] = useState('0')
   const [filters, setFilters] = useState({ customer: '', project: '', currency: '' })
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
@@ -64,7 +71,7 @@ export default function SalesBoard() {
           <p className="eyebrow">Sales research</p>
           <h1>What is still open on the order book</h1>
         </div>
-        <Window months={months} onMonths={setMonths} />
+        <Window months={months} onMonths={setMonths} periods={SALES_PERIODS} />
       </header>
       {error && <p className="banner">{error}</p>}
       {!data && loading && <p className="muted">Reading sales orders…</p>}

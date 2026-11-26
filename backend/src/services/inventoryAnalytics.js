@@ -11,12 +11,13 @@ async function loadRows() {
   loading = (async () => {
     const db = await connectDB();
     if (!db.BOMs) throw new Error('Inventory is not connected');
-    const docs = await db.BOMs.collection('inventory').find({ fileType: 'CAN' }).toArray();
+    const docs = await db.BOMs.collection('inventory').find({ fileType: { $in: ['CAN', 'USA'] } }).toArray();
     const rows = docs.map((doc) => {
       const qty = number(doc.qty);
       const unitPrice = number(doc.unitPrice);
       return {
         id: String(doc._id),
+        region: text(doc.fileType).toUpperCase() === 'USA' ? 'USA' : 'Canada',
         part: text(doc.TDGPN || doc.partNo),
         description: text(doc.description || doc.name),
         location: text(doc.location) || '(none)',
@@ -38,8 +39,17 @@ async function loadRows() {
   return loading;
 }
 
+function regionOf(filters) {
+  const value = text(filters.region).toLowerCase();
+  if (value === 'usa') return 'USA';
+  if (value === 'canada' || value === 'can') return 'Canada';
+  return 'ALL';
+}
+
 function scoped(rows, filters) {
+  const region = regionOf(filters);
   return rows.filter((row) => {
+    if (region !== 'ALL' && row.region !== region) return false;
     if (filters.location && row.location !== filters.location) return false;
     if (filters.category && row.category !== filters.category) return false;
     return true;
@@ -83,16 +93,27 @@ async function getInventoryDashboard(filters) {
       locations: [...new Set(rows.map((row) => row.location))].sort(),
       categories: [...new Set(rows.map((row) => row.category))].filter((name) => name !== '(none)').sort(),
     },
-    findings: [
-      'This is the current Canada stock file. The USA rows in the same file have no quantity, so they are not included.',
-      `${countText(rows.length - stocked.length)} of ${countText(rows.length)} parts have nothing on hand. ${countText(Math.round(qty))} pieces are in stock.`,
-      `On-hand value at the stored unit price is ${countText(Math.round(value))}.`,
-      topLocation ? `${topLocation.name} holds the most pieces: ${countText(Math.round(topLocation.qty))}.` : 'No stocked location in this cut.',
-    ],
+    findings: findingsFor(regionOf(filters), rows, stocked, qty, value, topLocation),
   };
 }
 
+function findingsFor(region, rows, stocked, qty, value, topLocation) {
+  const intro = region === 'USA'
+    ? 'This is the USA stock file. Part number, location, and quantity are blank on these rows, so the stored breakdown is category.'
+    : region === 'Canada'
+      ? 'This is the current Canada stock file. Quantity is the on-hand count in that file.'
+      : 'Canada and USA are both included. Canada rows carry quantity. USA rows have category only, so they add to the part count and not to pieces on hand.';
+  return [
+    intro,
+    `${countText(rows.length - stocked.length)} of ${countText(rows.length)} parts have nothing on hand. ${countText(Math.round(qty))} pieces are in stock.`,
+    `On-hand value at the stored unit price is ${countText(Math.round(value))}.`,
+    topLocation ? `${topLocation.name} holds the most pieces: ${countText(Math.round(topLocation.qty))}.` : 'No stocked location in this cut.',
+  ];
+}
+
 function matches(row, filters) {
+  const region = regionOf(filters);
+  if (region !== 'ALL' && row.region !== region) return false;
   if (filters.location && row.location !== filters.location) return false;
   if (filters.category && row.category !== filters.category) return false;
   if (filters.part && row.part !== filters.part) return false;
@@ -108,7 +129,7 @@ async function listInventoryParts(filters) {
   let matched = rows.filter((row) => matches(row, filters));
   if (needle) {
     matched = matched.filter((row) =>
-      [row.part, row.description, row.location, row.category].join(' ').toLowerCase().includes(needle),
+      [row.part, row.description, row.location, row.category, row.region].join(' ').toLowerCase().includes(needle),
     );
   }
   matched.sort((a, b) => b.qty - a.qty);
